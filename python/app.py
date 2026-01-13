@@ -2,6 +2,10 @@ import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 import time
 
+def create_space(n_lines):
+    for i in range(n_lines):
+        st.write("")
+
 if "allow_autorefresh" not in st.session_state:
     st.session_state.allow_autorefresh = True
 
@@ -69,7 +73,25 @@ st.session_state.genre = st.selectbox("Select A Genre:", ["Random", "Fantasy", "
 if st.button("Generate Story"):
     st.session_state.story_generated = True
     st.session_state.allow_autorefresh = False
-    st.session_state.generated_story = "Generating story... (This is a placeholder action)"
+    st.session_state.generated_story = "Generated story"
+
+create_space(3)
+
+st.subheader("Short Video Based On The Generated Story:")
+create_space(1)
+st.write("placeholder video")
+
+create_space(3)
+
+st.subheader("The Generated Story in Text:")
+create_space(1)
+st.write("placeholder text")
+
+create_space(3)
+
+st.subheader("The Audio File For The Generated Story:")
+create_space(1)
+st.write("placeholder audio")
 
 if st.session_state.story_generated:
     st.write(st.session_state.generated_story)
