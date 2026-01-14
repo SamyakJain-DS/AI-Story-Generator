@@ -1,6 +1,8 @@
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 import time
+import numpy as np
+from generate_artifacts import *
 
 def create_space(n_lines):
     for i in range(n_lines):
@@ -38,7 +40,7 @@ if "story_prompt" not in st.session_state:
     st.session_state.story_prompt = ""
 
 if "story_generated" not in st.session_state:
-    st.session_state.story_generated = False
+    st.session_state.story_generated = True
 
 if "generated_story" not in st.session_state:
     st.session_state.generated_story = ""
@@ -68,12 +70,37 @@ if st.session_state.uploaded_images:
 if "genre" not in st.session_state:
     st.session_state.genre = ""
 
-st.session_state.genre = st.selectbox("Select A Genre:", ["Random", "Fantasy", "Science Fiction", "Mystery", "Romance", "Horror", "Comedy", "Thriller"])
+genres = ["Random", "Fantasy", "Science Fiction", "Mystery", "Romance", "Horror", "Comedy", "Thriller"]
+
+st.session_state.genre = st.selectbox("Select A Genre:", genres)
+if st.session_state.genre == "Random":
+    st.session_state.genre = np.random.choice(genres)
+
+if "decision" not in st.session_state:
+    st.session_state.decision = True
+
+if "generated_story" not in st.session_state:
+    st.session_state.generated_story = ""
+
+if "generated_audio" not in st.session_state:
+    st.session_state.generated_audio = None
 
 if st.button("Generate Story"):
-    st.session_state.story_generated = True
     st.session_state.allow_autorefresh = False
-    st.session_state.generated_story = "Generated story"
+    with st.spinner("Your Story Is Being Generated..... This May Take A Few Moments."):
+
+        st.session_state.decision, st.session_state.reason = evaluate_story_prompt(st.session_state.story_prompt)
+        st.session_state.story_generated, st.session_state.generated_story = generate_story_text(st.session_state.uploaded_images, st.session_state.genre, st.session_state.story_prompt)
+
+        if st.session_state.story_generated:
+            st.session_state.generated_audio = None
+
+if not st.session_state.story_generated:
+    st.error(st.session_state.generated_story)
+
+if not st.session_state.decision:
+    if user_prompt:
+        st.caption(f"Note: The provided prompt was not suitable for story generation. Reason: {st.session_state.reason}")
 
 create_space(3)
 
@@ -85,13 +112,10 @@ create_space(3)
 
 st.subheader("The Generated Story in Text:")
 create_space(1)
-st.write("placeholder text")
+st.write(st.session_state.generated_story)
 
 create_space(3)
 
 st.subheader("The Audio File For The Generated Story:")
 create_space(1)
-st.write("placeholder audio")
-
-if st.session_state.story_generated:
-    st.write(st.session_state.generated_story)
+st.audio(st.session_state.generated_audio)

@@ -1,0 +1,154 @@
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.messages import HumanMessage, SystemMessage
+from typing import Optional, List
+from pydantic import BaseModel, Field
+from dotenv import load_dotenv
+import base64
+import os
+
+load_dotenv()
+
+class StoryPromptEvaluation(BaseModel):
+    is_story_prompt: bool = Field(
+        description="Whether the input is suitable for creative story writing"
+    )
+    reason: str = Field(
+        description="Short explanation for the decision"
+    )
+
+
+EVALUATOR_PROMPT = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        """
+You are an evaluator.
+
+Your task is to decide whether a user's input is a valid prompt
+for generating a creative story.
+
+VALID if the input:
+- Asks to write, create, imagine, narrate, or tell a story
+- Mentions characters, plot, theme, genre, or events
+- Is related to storytelling in any way
+
+INVALID if the input:
+- Is unrelated (facts, math, coding, general questions)
+- Is random or meaningless text
+- Is empty or irrelevant
+
+Respond ONLY in valid JSON using this format:
+{{
+  "is_story_prompt": true or false,
+  "reason": "short explanation"
+}}
+        """
+    ),
+    (
+        "human",
+        "{user_prompt}"
+    )
+])
+
+STORY_SYSTEM_MESSAGE = SystemMessage(
+    content="""
+You are a creative storyteller.
+
+Write a vivid, engaging story inspired by:
+- The uploaded images
+- The selected genre
+- Optional user context (if provided)
+
+Guidelines:
+- Follow the conventions of the selected genre
+- Use the images as visual grounding, not literal descriptions
+- Invent characters, emotions, and events naturally
+- Maintain a clear beginning, middle, and end
+- Do NOT mention the images explicitly
+- Do NOT say you are an AI
+
+Return ONLY the story text.
+"""
+)
+
+def evaluate_story_prompt(user_prompt: Optional[str]) -> tuple[bool, str]:
+    """
+    Uses Gemini to evaluate whether the prompt
+    is suitable for story generation.
+    """
+
+    if not user_prompt or not user_prompt.strip():
+        return False, "Empty prompt"
+
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash",
+        temperature=0,
+        google_api_key=os.getenv("GOOGLE_API_KEY")
+    )
+
+    parser = PydanticOutputParser(pydantic_object=StoryPromptEvaluation)
+
+    chain = EVALUATOR_PROMPT | llm | parser
+
+    try:
+        result = chain.invoke({"user_prompt": user_prompt})
+        return result.is_story_prompt, result.reason
+    
+    except Exception as e:
+        return False, f"Evaluation failed: {str(e)}"
+    
+def _image_bytes_to_gemini_part(image_bytes: bytes) -> dict:
+    encoded = base64.b64encode(image_bytes).decode("utf-8")
+    return {
+        "type": "image_url",
+        "image_url": {
+            "url": f"data:image/jpeg;base64,{encoded}"
+        }
+    }
+
+def generate_story_text(
+    images: List[bytes],
+    genre: str,
+    user_prompt: Optional[str] = None
+) -> str:
+    """
+    Generates a story using Gemini Vision based on uploaded images,
+    selected genre, and optional user prompt.
+    """
+
+    if not images:
+        return False, "Story Generation Failed. Please Attach Images."
+    
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash",
+        temperature=1.3,
+        google_api_key=os.getenv("GOOGLE_API_KEY")
+    )
+
+    content = []
+
+    instruction_text = f"""
+Genre: {genre}
+
+User context (optional):
+{user_prompt if user_prompt else "None"}
+
+Write the story now.
+"""
+    content.append({"type": "text", "text": instruction_text})
+
+    for img in images:
+        content.append(_image_bytes_to_gemini_part(img.getvalue()))
+
+    messages = [
+        STORY_SYSTEM_MESSAGE,
+        HumanMessage(content=content)
+    ]
+
+    try:
+        response = llm.invoke(messages)
+
+        return True, response.content.strip()
+    except Exception as e:
+        return False, f"Story Generation Failed: {str(e)}"
