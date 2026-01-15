@@ -1,2 +1,3 @@
 /story_gen
 .env
+/python/__pycache__

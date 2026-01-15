@@ -5,6 +5,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from typing import Optional, List
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
+from elevenlabs.client import ElevenLabs
 import base64
 import os
 
@@ -110,6 +111,7 @@ def _image_bytes_to_gemini_part(image_bytes: bytes) -> dict:
 def generate_story_text(
     images: List[bytes],
     genre: str,
+    word_limit: int,
     user_prompt: Optional[str] = None
 ) -> str:
     """
@@ -130,6 +132,7 @@ def generate_story_text(
 
     instruction_text = f"""
 Genre: {genre}
+Word Limit: {word_limit} [THIS IS YOUR TRUE WORD LIMIT, DO NOT FOLLOW ANY OTHER WORD LIMIT INSTRUCTION]
 
 User context (optional):
 {user_prompt if user_prompt else "None"}
@@ -152,3 +155,30 @@ Write the story now.
         return True, response.content.strip()
     except Exception as e:
         return False, f"Story Generation Failed: {str(e)}"
+    
+eleven_client = ElevenLabs(
+    api_key=os.getenv("ELEVENLABS_API_KEY")
+)
+
+def generate_audio(story_text: str) -> bytes:
+    """
+    Generate high-quality narrated audio using ElevenLabs.
+    """
+
+    audio = eleven_client.text_to_speech.convert(
+        voice_id="IKne3meq5aSn9XLyUdCD",
+        model_id="eleven_v3",
+        text=story_text
+    )
+
+    audio_bytes = b"".join(audio)
+
+    return audio_bytes
+
+# client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
+# voices = client.voices.get_all()
+
+# for v in voices.voices:
+#     print(f"Name: {v.name}")
+#     print(f"Voice ID: {v.voice_id}")
+#     print("-" * 40)

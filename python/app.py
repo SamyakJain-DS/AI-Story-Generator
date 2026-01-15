@@ -67,14 +67,14 @@ if st.session_state.uploaded_images:
         with col:
             st.image(image, width=500)
 
-if "genre" not in st.session_state:
-    st.session_state.genre = ""
-
 genres = ["Random", "Fantasy", "Science Fiction", "Mystery", "Romance", "Horror", "Comedy", "Thriller"]
 
 st.session_state.genre = st.selectbox("Select A Genre:", genres)
+
 if st.session_state.genre == "Random":
     st.session_state.genre = np.random.choice(genres)
+
+st.session_state.word_limit = st.select_slider("Word Limit", options=[50, 100, 150, 200, 250, 300], value=100)
 
 if "decision" not in st.session_state:
     st.session_state.decision = True
@@ -90,10 +90,10 @@ if st.button("Generate Story"):
     with st.spinner("Your Story Is Being Generated..... This May Take A Few Moments."):
 
         st.session_state.decision, st.session_state.reason = evaluate_story_prompt(st.session_state.story_prompt)
-        st.session_state.story_generated, st.session_state.generated_story = generate_story_text(st.session_state.uploaded_images, st.session_state.genre, st.session_state.story_prompt)
+        st.session_state.story_generated, st.session_state.generated_story = generate_story_text(st.session_state.uploaded_images, st.session_state.genre, st.session_state.word_limit, st.session_state.story_prompt)
 
         if st.session_state.story_generated:
-            st.session_state.generated_audio = None
+            st.session_state.generated_audio = generate_audio(st.session_state.generated_story)
 
 if not st.session_state.story_generated:
     st.error(st.session_state.generated_story)
@@ -101,12 +101,6 @@ if not st.session_state.story_generated:
 if not st.session_state.decision:
     if user_prompt:
         st.caption(f"Note: The provided prompt was not suitable for story generation. Reason: {st.session_state.reason}")
-
-create_space(3)
-
-st.subheader("Short Video Based On The Generated Story:")
-create_space(1)
-st.write("placeholder video")
 
 create_space(3)
 
@@ -118,4 +112,4 @@ create_space(3)
 
 st.subheader("The Audio File For The Generated Story:")
 create_space(1)
-st.audio(st.session_state.generated_audio)
+st.audio(st.session_state.generated_audio, format="audio/wav")
