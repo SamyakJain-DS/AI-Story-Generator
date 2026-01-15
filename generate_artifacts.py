@@ -174,11 +174,3 @@ def generate_audio(story_text: str) -> bytes:
     audio_bytes = b"".join(audio)
 
     return audio_bytes
-
-# client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
-# voices = client.voices.get_all()
-
-# for v in voices.voices:
-#     print(f"Name: {v.name}")
-#     print(f"Voice ID: {v.voice_id}")
-#     print("-" * 40)
