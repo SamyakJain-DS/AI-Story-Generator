@@ -1,3 +1,9 @@
-/story_gen
 .env
-/python/__pycache__
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+story_gen/
+venv/
+.env
