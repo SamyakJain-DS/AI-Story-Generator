@@ -2,6 +2,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.messages import HumanMessage, SystemMessage
+from google.api_core.exceptions import ResourceExhausted
+from elevenlabs.core.api_error import ApiError
 from typing import Optional, List
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -96,6 +98,8 @@ def evaluate_story_prompt(user_prompt: Optional[str]) -> tuple[bool, str]:
         result = chain.invoke({"user_prompt": user_prompt})
         return result.is_story_prompt, result.reason
     
+    except ResourceExhausted:
+        return False, "Evaluation Failed: AI Quota Exceeded, Please Try Again Tomorrow."
     except Exception as e:
         return False, f"Evaluation failed: {str(e)}"
     
@@ -153,6 +157,8 @@ Write the story now.
         response = llm.invoke(messages)
 
         return True, response.content.strip()
+    except ResourceExhausted:
+        return False, "Story Generation Failed: AI Quota Exceeded, Please Try Again Tomorrow."
     except Exception as e:
         return False, f"Story Generation Failed: {str(e)}"
     
@@ -165,12 +171,26 @@ def generate_audio(story_text: str) -> bytes:
     Generate high-quality narrated audio using ElevenLabs.
     """
 
-    audio = eleven_client.text_to_speech.convert(
-        voice_id="IKne3meq5aSn9XLyUdCD",
-        model_id="eleven_v3",
-        text=story_text
-    )
+    try:
+        audio = eleven_client.text_to_speech.convert(
+            voice_id="cgSgspJ2msm6clMCkdW9",
+            model_id="eleven_v3",
+            text=story_text
+        )
+        audio_bytes = b"".join(audio)
+        return True, audio_bytes
+    
+    except ApiError as e:
+        if e.status_code == 429:
+            return False, "Audio Generation Failed: Rate Limit Exceeded, Please Try Again Later."
+    except Exception as e:
+        return False, f"Audio Generation Failed: {str(e)}"
+    
+client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
 
-    audio_bytes = b"".join(audio)
+voices = client.voices.get_all()
 
-    return audio_bytes
+for v in voices.voices:
+    print(f"Name: {v.name}")
+    print(f"Voice ID: {v.voice_id}")
+    print("-" * 40)

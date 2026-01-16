@@ -83,7 +83,10 @@ if "generated_story" not in st.session_state:
     st.session_state.generated_story = ""
 
 if "generated_audio" not in st.session_state:
-    st.session_state.generated_audio = None
+    st.session_state.generated_audio = ""
+
+if "audio_generated" not in st.session_state:
+    st.session_state.audio_generated = False
 
 if st.button("Generate Story"):
     st.session_state.allow_autorefresh = False
@@ -93,7 +96,7 @@ if st.button("Generate Story"):
         st.session_state.story_generated, st.session_state.generated_story = generate_story_text(st.session_state.uploaded_images, st.session_state.genre, st.session_state.word_limit, st.session_state.story_prompt)
 
         if st.session_state.story_generated:
-            st.session_state.generated_audio = generate_audio(st.session_state.generated_story)
+            st.session_state.audio_generated, st.session_state.generated_audio = generate_audio(st.session_state.generated_story)
 
 if not st.session_state.story_generated:
     st.error(st.session_state.generated_story)
@@ -112,4 +115,7 @@ create_space(3)
 
 st.subheader("The Audio File For The Generated Story:")
 create_space(1)
-st.audio(st.session_state.generated_audio, format="audio/wav")
+if st.session_state.audio_generated:
+    st.audio(st.session_state.generated_audio, format="audio/wav")
+else:
+    st.write(f"{st.session_state.generated_audio}")
