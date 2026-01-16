@@ -185,12 +185,3 @@ def generate_audio(story_text: str) -> bytes:
             return False, "Audio Generation Failed: Rate Limit Exceeded, Please Try Again Later."
     except Exception as e:
         return False, f"Audio Generation Failed: {str(e)}"
-    
-client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
-
-voices = client.voices.get_all()
-
-for v in voices.voices:
-    print(f"Name: {v.name}")
-    print(f"Voice ID: {v.voice_id}")
-    print("-" * 40)
