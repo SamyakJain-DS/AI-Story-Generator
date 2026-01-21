@@ -128,7 +128,7 @@ def generate_story_text(
     
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
-        temperature=1.3,
+        temperature=0.8,
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )
 
