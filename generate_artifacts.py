@@ -183,5 +183,7 @@ def generate_audio(story_text: str) -> bytes:
     except ApiError as e:
         if e.status_code == 429:
             return False, "Audio Generation Failed: Rate Limit Exceeded, Please Try Again Later."
+        else:
+            return False, f"Audio Generation Failed: API Error {e.status_code}"
     except Exception as e:
         return False, f"Audio Generation Failed: {str(e)}"
