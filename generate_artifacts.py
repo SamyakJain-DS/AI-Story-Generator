@@ -3,13 +3,15 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.messages import HumanMessage, SystemMessage
 from google.api_core.exceptions import ResourceExhausted
-from elevenlabs.core.api_error import ApiError
 from typing import Optional, List
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
-from elevenlabs.client import ElevenLabs
-import base64
+import soundfile as sf
+from kokoro_onnx import Kokoro
+import urllib.request
+import io
 import os
+import base64
 
 load_dotenv()
 
@@ -125,7 +127,7 @@ def generate_story_text(
 
     if not images:
         return False, "Story Generation Failed. Please Attach Images."
-    
+
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
         temperature=0.8,
@@ -161,29 +163,50 @@ Write the story now.
         return False, "Story Generation Failed: AI Quota Exceeded, Please Try Again Tomorrow."
     except Exception as e:
         return False, f"Story Generation Failed: {str(e)}"
+
+def get_kokoro_files():
+    """
+    Downloads the model and voices files from GitHub releases.
+    """
+    model_filename = "kokoro-v1.0.int8.onnx"
+    voices_filename = "voices-v1.0.bin"
     
-eleven_client = ElevenLabs(
-    api_key=os.getenv("ELEVENLABS_API_KEY")
-)
-
-def generate_audio(story_text: str) -> bytes:
-    """
-    Generate high-quality narrated audio using ElevenLabs.
-    """
-
-    try:
-        audio = eleven_client.text_to_speech.convert(
-            voice_id="cgSgspJ2msm6clMCkdW9",
-            model_id="eleven_v3",
-            text=story_text
+    base_url = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0"
+    
+    if not os.path.exists(model_filename):
+        print(f"Downloading {model_filename}...")
+        urllib.request.urlretrieve(
+            f"{base_url}/{model_filename}",
+            model_filename
         )
-        audio_bytes = b"".join(audio)
-        return True, audio_bytes
     
-    except ApiError as e:
-        if e.status_code == 429:
-            return False, "Audio Generation Failed: Rate Limit Exceeded, Please Try Again Later."
-        else:
-            return False, f"Audio Generation Failed: API Error {e.status_code}"
+    if not os.path.exists(voices_filename):
+        print(f"Downloading {voices_filename}...")
+        urllib.request.urlretrieve(
+            f"{base_url}/{voices_filename}",
+            voices_filename
+        )
+
+    return model_filename, voices_filename
+
+MODEL_PATH, VOICES_PATH = get_kokoro_files()
+kokoro = Kokoro(MODEL_PATH, VOICES_PATH)
+
+
+def generate_audio(story_text: str) -> tuple[bool, bytes]:
+    try:
+        samples, sample_rate = kokoro.create(
+            story_text, 
+            voice="af_bella", 
+            speed=1.0, 
+            lang="en-us"
+        )
+        
+        byte_io = io.BytesIO()
+        sf.write(byte_io, samples, sample_rate, format='WAV')
+        byte_io.seek(0)
+        
+        return True, byte_io.read()
+        
     except Exception as e:
         return False, f"Audio Generation Failed: {str(e)}"

@@ -89,7 +89,11 @@ if "audio_generated" not in st.session_state:
     st.session_state.audio_generated = False
 
 if st.button("Generate Story"):
-    st.session_state.allow_autorefresh = False
+    if st.session_state.allow_autorefresh:
+        st.warning("Backend processing complete. Please regenerate.")
+        st.session_state.allow_autorefresh = False
+        time.sleep(4)
+        
     with st.spinner("Your Story Is Being Generated..... This May Take A Few Moments."):
 
         st.session_state.decision, st.session_state.reason = evaluate_story_prompt(st.session_state.story_prompt)

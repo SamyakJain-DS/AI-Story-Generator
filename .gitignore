@@ -4,6 +4,9 @@ __pycache__/
 *.pyo
 *.pyd
 
-story_gen/
+project_env/
 venv/
 .env
+
+kokoro-v1.0.int8.onnx
+voices-v1.0.bin
