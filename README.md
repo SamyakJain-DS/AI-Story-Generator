@@ -1,7 +1,7 @@
 # 🎨 AI Story Generator
 
 An end-to-end **multimodal GenAI application** that generates **creative stories and narrated audio** from user-uploaded images using **Google Gemini** and **ElevenLabs**, deployed via **Streamlit**. <br>
-Live website link for you to try: [Streamlit Website](https://github.com/SamyakJain-DS)
+Live website link for you to try: [Streamlit Website](https://ai-story-generator-samyak.streamlit.app/)
 
 ---
 
@@ -11,9 +11,9 @@ Live website link for you to try: [Streamlit Website](https://github.com/SamyakJ
 * ✍️ **Optional user prompt** with automatic relevance evaluation
 * 🎭 **Genre selection** (Fantasy, Sci-Fi, Mystery, Horror, etc.)
 * 📏 **Word limit control**
-* 🔊 **High-quality narrated audio** using ElevenLabs
+* 🔊 **High-quality narrated audio** using Kokoro ONNX
 * ⚡ **Streamlit-based interactive UI**
-* ☁️ **Streamlit Cloud deployable**
+* ☁️ **Streamlit Cloud deployable (CPU-only)**
 
 ---
 
@@ -27,7 +27,7 @@ Live website link for you to try: [Streamlit Website](https://github.com/SamyakJ
    * Selected genre
    * Word limit
    * Optional user context
-4. The generated story is converted into **natural-sounding narrated audio** using ElevenLabs
+4. The generated story is converted into **natural-sounding narrated audio** using a **local neural TTS model**
 5. The app displays:
 
    * 📖 Story text
@@ -67,18 +67,24 @@ AI_Story_Generator/
   * Prompt evaluation
   * Multimodal story generation (text + images)
 
-### 🔊 Text-to-Speech
+### 🔊 Text-to-Speech (Offline)
 
-* **ElevenLabs API**
+* **Kokoro ONNX**
 
-  * High-quality neural voices
-  * Expressive narration suitable for storytelling
+  * Local neural text-to-speech engine
+  * No API keys required
+  * Fully offline audio generation
+  * ONNX-optimized for CPU inference
+  * WAV audio output
+
+> The model and voice files are automatically downloaded from official GitHub releases on first run.
 
 ### 🖥️ Frontend
 
 * **Streamlit**
 * Session state–driven UI
 * Auto-refresh control to prevent unintended reruns
+* Graceful error handling for AI rate limits
 
 ---
 
@@ -88,6 +94,7 @@ AI_Story_Generator/
 * Multiple Gemini calls per generation can exhaust quota quickly
 * Audio generation depends on available ElevenLabs voices
 * At least **one image is required** to generate a story
+* Initial run may take longer due to model file downloads
 
 ---
 
