@@ -89,7 +89,11 @@ AI_Story_Generator/
 ---
 
 Website Demo:
+<img width="864" height="691" alt="image" src="https://github.com/user-attachments/assets/01df0ead-8d6f-480e-b802-0f83756ed5b4" />
 
+https://github.com/user-attachments/assets/dfda6bea-f40c-466d-85e7-7a4dcbe50b3b
+
+---
 
 ## ⚠️ Notes & Limitations
 
