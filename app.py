@@ -14,7 +14,7 @@ if "allow_autorefresh" not in st.session_state:
 if st.session_state.allow_autorefresh:
     st_autorefresh(interval=2000, key="textbox_placeholder_refresh")
 
-MAX_IMAGES = 8
+MAX_IMAGES = 5
 
 st.title("AI Story Generator")
 st.markdown(
@@ -22,6 +22,8 @@ st.markdown(
     #### Generate Creative Stories Using AI!
     """
     )
+
+st.divider()
 
 st.markdown("""
 <style>
@@ -102,6 +104,8 @@ if st.button("Generate Story"):
         if st.session_state.story_generated:
             st.session_state.audio_generated, st.session_state.generated_audio = generate_audio(st.session_state.generated_story)
 
+st.divider()
+
 if not st.session_state.story_generated:
     st.error(st.session_state.generated_story)
 
@@ -116,6 +120,8 @@ create_space(1)
 st.write(st.session_state.generated_story)
 
 create_space(3)
+
+st.divider()
 
 st.subheader("The Audio File For The Generated Story:")
 create_space(1)

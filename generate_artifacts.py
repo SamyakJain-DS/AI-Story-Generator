@@ -1,4 +1,4 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -79,17 +79,17 @@ Return ONLY the story text.
 
 def evaluate_story_prompt(user_prompt: Optional[str]) -> tuple[bool, str]:
     """
-    Uses Gemini to evaluate whether the prompt
+    Uses Groq GPT-OSS-120B to evaluate whether the prompt
     is suitable for story generation.
     """
 
     if not user_prompt or not user_prompt.strip():
         return False, "Empty prompt"
 
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+    llm = ChatGroq(
+        model="openai/gpt-oss-120b",
         temperature=0,
-        google_api_key=os.getenv("GOOGLE_API_KEY")
+        api_key=os.getenv("GROQ_API_KEY")
     )
 
     parser = PydanticOutputParser(pydantic_object=StoryPromptEvaluation)
@@ -121,17 +121,19 @@ def generate_story_text(
     user_prompt: Optional[str] = None
 ) -> str:
     """
-    Generates a story using Gemini Vision based on uploaded images,
-    selected genre, and optional user prompt.
+    Generates a story using Groq Llama 4 Scout (multimodal vision model)
+    based on uploaded images, selected genre, and optional user prompt.
+    
+    Note: Groq supports up to 5 images per request, max 4MB total size.
     """
 
     if not images:
         return False, "Story Generation Failed. Please Attach Images."
 
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+    llm = ChatGroq(
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
         temperature=0.8,
-        google_api_key=os.getenv("GOOGLE_API_KEY")
+        api_key=os.getenv("GROQ_API_KEY")
     )
 
     content = []
@@ -157,8 +159,8 @@ Write the story now.
 
     try:
         response = llm.invoke(messages)
-
         return True, response.content.strip()
+    
     except ResourceExhausted:
         return False, "Story Generation Failed: AI Quota Exceeded, Please Try Again Tomorrow."
     except Exception as e:

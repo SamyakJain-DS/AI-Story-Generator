@@ -1,17 +1,17 @@
 # 🎨 AI Story Generator
 
 An end-to-end **multimodal GenAI application** that generates **creative stories and narrated audio** from user-uploaded images using **Google Gemini** and **ElevenLabs**, deployed via **Streamlit**. <br>
-Live website link for you to try: [Streamlit Website](https://ai-story-generator-samyak.streamlit.app/)
+[Live website link for you to try](https://ai-story-generator-samyak.streamlit.app/)
 
 ---
 
 ## ✨ Features
 
-* 🖼️ **Image-driven storytelling** using Gemini Vision
+* 🖼️ **Image-driven storytelling** using Groq-hosted multimodal vision-language models
 * ✍️ **Optional user prompt** with automatic relevance evaluation
 * 🎭 **Genre selection** (Fantasy, Sci-Fi, Mystery, Horror, etc.)
 * 📏 **Word limit control**
-* 🔊 **High-quality narrated audio** using Kokoro ONNX
+* 🔊 **High-quality narrated audio** using Kokoro ONNX (fully offline)
 * ⚡ **Streamlit-based interactive UI**
 * ☁️ **Streamlit Cloud deployable (CPU-only)**
 
@@ -19,14 +19,15 @@ Live website link for you to try: [Streamlit Website](https://ai-story-generator
 
 ## 🧠 How It Works
 
-1. User uploads **1–8 images**
-2. Optional prompt is **evaluated for story relevance** using Gemini
-3. A story is generated using **Gemini Vision** based on:
+1. User uploads **1–5 images**
+2. Optional prompt is **evaluated for story relevance** using a Groq-hosted LLM
+3. A story is generated using a **Groq multimodal vision-language model** based on:
 
    * Uploaded images
    * Selected genre
    * Word limit
    * Optional user context
+
 4. The generated story is converted into **natural-sounding narrated audio** using a **local neural TTS model**
 5. The app displays:
 
@@ -62,10 +63,11 @@ AI_Story_Generator/
 
 ### 🧠 LLM & Vision
 
-* **Google Gemini 2.5 Flash**
+* **Groq-hosted Multimodal LLMs**
 
-  * Prompt evaluation
-  * Multimodal story generation (text + images)
+  * Prompt relevance evaluation using GPT-OSS-120B
+  * Multimodal story generation using LLaMA 4 Scout (Vision-Language Model)
+  * Free-tier friendly, high-throughput inference
 
 ### 🔊 Text-to-Speech (Offline)
 
@@ -88,11 +90,18 @@ AI_Story_Generator/
 
 ---
 
+Website Demo:
+
+<img width="864" height="691" alt="image" src="https://github.com/user-attachments/assets/01df0ead-8d6f-480e-b802-0f83756ed5b4" />
+
+
+https://github.com/user-attachments/assets/dfda6bea-f40c-466d-85e7-7a4dcbe50b3b
+
+---
+
 ## ⚠️ Notes & Limitations
 
-* Gemini **free tier is rate-limited**
-* Multiple Gemini calls per generation can exhaust quota quickly
-* Audio generation depends on available ElevenLabs voices
+* Multimodal requests are limited to 5 images per generation
 * At least **one image is required** to generate a story
 * Initial run may take longer due to model file downloads
 
