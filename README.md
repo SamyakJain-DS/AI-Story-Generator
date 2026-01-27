@@ -1,6 +1,6 @@
 # 🎨 AI Story Generator
 
-An end-to-end **multimodal GenAI application** that generates **creative stories and narrated audio** from user-uploaded images using **Google Gemini** and **ElevenLabs**, deployed via **Streamlit**. <br>
+An end-to-end **multimodal GenAI application** that generates **creative stories and narrated audio** from user-uploaded images using **Groq-hosted multimodal LLMs** and a **fully offline neural TTS pipeline**, deployed via **Streamlit**. <br>
 [Live website link for you to try](https://ai-story-generator-samyak.streamlit.app/)
 
 ---
